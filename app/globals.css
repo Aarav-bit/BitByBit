@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+:root {
+  /* Escrow Terminal - Industrial Utilitarian Palette */
+  --background: #0d0f12;
+  --foreground: #e0e6ed;
+  
+  --card: #15191e;
+  --card-foreground: #e0e6ed;
+  
+  --popover: #0d0f12;
+  --popover-foreground: #e0e6ed;
+  
+  --primary: #3b82f6; /* Trust Blue */
+  --primary-foreground: #ffffff;
+  
+  --secondary: #1e293b;
+  --secondary-foreground: #e0e6ed;
+  
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  
+  --accent: #22c55e; /* Success / Payout Green */
+  --accent-foreground: #ffffff;
+  
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  
+  --border: #334155;
+  --input: #1e293b;
+  --ring: #3b82f6;
+  
+  --radius: 0.25rem; /* Sharp corners for industrial feel */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  
+  --font-sans: "Inter", var(--font-geist-sans);
+  --font-mono: "JetBrains Mono", var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+pre, code, .terminal-font {
+  font-family: var(--font-mono);
+}
+
+/* Custom Scrollbar for Industrial Feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--radius);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
