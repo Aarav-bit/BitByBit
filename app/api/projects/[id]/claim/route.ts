@@ -25,12 +25,46 @@ export async function POST(
   if (!project) return new NextResponse("Project not found", { status: 404 });
   if (project.freelancerId) return new NextResponse("Project already claimed", { status: 400 });
 
-  const updatedProject = await db.project.update({
-    where: { id },
-    data: {
-      freelancerId: user.id,
-    },
+  const milestoneCount = await db.milestone.count({
+    where: { projectId: id }
   });
+
+  // Check for rehire (if freelancer has another project with THIS employer)
+  const previousCollaborations = await db.project.count({
+    where: {
+      employerId: project.employerId,
+      freelancerId: user.id,
+      NOT: { id: project.id }
+    }
+  });
+
+  const isRehire = previousCollaborations > 0;
+
+  const updatedProject = await db.$transaction(async (tx) => {
+    // 1. Assign freelancer
+    const p = await tx.project.update({
+      where: { id },
+      data: {
+        freelancerId: user.id,
+      },
+    });
+
+    // 2. Update freelancer metrics
+    await tx.user.update({
+      where: { id: user.id },
+      data: {
+        projectsAcceptedCount: { increment: 1 },
+        totalMilestonesAssignedCount: { increment: milestoneCount },
+        rehireCount: { increment: isRehire ? 1 : 0 }
+      }
+    });
+
+    return p;
+  });
+
+  // 3. Update Scores
+  const { updateReputationScores } = await import("@/lib/scoring");
+  await updateReputationScores(user.id);
 
   return NextResponse.json(updatedProject);
 }

@@ -1,0 +1,149 @@
+PROJECT: BITBYBIT
+
+==================================================
+1) CORE FEATURES
+==================================================
+- Authentication & User Onboarding
+  - Clerk-powered auth (sign-in / sign-up).
+  - Middleware-enforced protection for non-public routes.
+  - User record auto-provisioned in database on first dashboard visit.
+
+- Role System
+  - Two roles: EMPLOYER and FREELANCER.
+  - Role selection screen on first login.
+  - Role stored in DB and used to gate access to employer/freelancer flows.
+
+- Employer "Protocol Node" Creation
+  - Employers can initialize a new project node from the dashboard.
+  - 2-step flow:
+    1) Employer enters protocol title + high-level task description.
+    2) AI converts the task into milestone drafts; employer can edit and set escrow amounts, then deploy.
+  - Each protocol node is persisted as a Project with associated Milestones.
+  - Virtual escrow total is automatically calculated from milestone amounts.
+
+- AI Milestone Generation (Gemini)
+  - API route: /api/projects/generate-milestones
+  - Input: title (optional) + task description.
+  - Output: project description + milestone drafts (title, Definition of Done, amount placeholder).
+  - Uses Google Gemini via @google/genai when GEMINI_API_KEY is configured.
+  - Includes a deterministic mock fallback when GEMINI_API_KEY is missing, so dev works without external calls.
+
+- Projects Listing & Views
+  - Dashboard view showing a summary of active protocols.
+  - Dedicated /projects archive page.
+  - Project cards with:
+    - Status, protocol ID fragment, title.
+    - Escrow total, employer/freelancer name.
+    - Visual progress bar based on approved milestones.
+  - Project detail route: /projects/[id]
+
+- Freelancer Discovery & Assignment
+  - Freelancers see:
+    - Projects assigned to them.
+    - Unassigned projects they can join.
+  - Employer projects include current freelancer (or UNASSIGNED).
+  - API endpoints for claiming / joining projects.
+
+- Milestone & Submission Workflow
+  - Milestones with:
+    - Title, description, amount, Definition of Done, status.
+  - Freelancers can submit work for a milestone.
+  - Submissions stored with:
+    - Content, AQA result, AQA feedback, timestamp.
+
+- AI Quality Assurance (AQA) for Submissions
+  - API route: /api/milestones/submit
+  - Uses Google Gemini via @google/genai to:
+    - Evaluate submitted work against milestone Definition of Done.
+    - Return structured JSON: result (PASS/FAIL) + feedback.
+  - Robust JSON extraction/parsing from model text output.
+  - Mock AQA path used when GEMINI_API_KEY is not configured.
+
+- Virtual Escrow & Reputation (PFI)
+  - Virtual balance tracked for users.
+  - When AQA passes:
+    - Employer virtual balance decremented by milestone amount.
+    - Freelancer virtual balance incremented by milestone amount.
+    - PFI score boosted (+5 on first attempt, +2 on later attempts).
+  - When AQA fails:
+    - PFI score reduced (-5).
+
+- Admin & Dashboard Experience
+  - Terminal-style dashboard UI with stats:
+    - Virtual balance.
+    - Active protocols count.
+    - Reliability index (PFI score).
+    - System uptime (static metric).
+  - Rich, neon/terminal-inspired design with progress bars and CTAs.
+
+- Netlify Deployment Configuration
+  - netlify.toml with:
+    - Build command: npm run build.
+    - Publish directory: .next.
+    - Netlify Next.js plugin.
+
+
+==================================================
+2) TECH STACK
+==================================================
+- Framework & Runtime
+  - Next.js 16 (App Router).
+  - React 19.
+  - TypeScript 5+.
+
+- Styling & UI
+  - Tailwind CSS v4 (via @tailwindcss/postcss).
+  - Custom terminal/cyberpunk styled components.
+  - Lucide-react icon set.
+  - Framer Motion for animations (imported, optional).
+  - Sonner for toast notifications.
+
+- Auth & Security
+  - Clerk for authentication and user management.
+  - Middleware-based route protection using @clerk/nextjs/server.
+
+- Database & ORM
+  - PostgreSQL (Prisma datasource).
+  - Prisma ORM 6.x.
+  - Prisma Client generated and used via a singleton pattern in lib/db.ts.
+
+- AI Integration
+  - Google Gemini via @google/genai.
+  - Environment variable: GEMINI_API_KEY.
+  - Used for:
+    - Milestone generation from a single task.
+    - AI Quality Assurance (AQA) of freelancer submissions.
+
+- API & Backend
+  - Next.js Route Handlers under /app/api:
+    - /api/projects           (GET, POST)
+    - /api/projects/generate-milestones (POST)
+    - /api/projects/[id]/join (POST)
+    - /api/projects/[id]/claim (POST)
+    - /api/milestones/submit  (POST)
+    - /api/user/role          (POST)
+    - /api/admin              (GET/POST depending on implementation)
+
+- Tooling & DX
+  - ESLint 9 with next/eslint-config-next.
+  - TypeScript strict mode.
+  - tsx for running TS scripts (e.g., seeding).
+  - Scripts:
+    - scripts/check-db.ts
+    - scripts/seed-projects.ts
+
+- Deployment Targets
+  - Netlify (via netlify.toml + @netlify/plugin-nextjs).
+  - Compatible with typical Next.js hosting (Vercel/others) with minimal changes.
+
+
+==================================================
+3) KEY ENVIRONMENT VARIABLES
+==================================================
+- DATABASE_URL           (PostgreSQL connection string for Prisma)
+- GEMINI_API_KEY         (Google Gemini API key; optional in dev thanks to fallbacks)
+- Clerk variables (inferred from usage):
+  - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  - CLERK_SECRET_KEY
+
+

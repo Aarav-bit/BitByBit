@@ -14,9 +14,13 @@ import {
   Activity,
   Zap,
   Lock,
-  Unlock
+  Unlock,
+  ShieldAlert
 } from "lucide-react";
 import { toast } from "sonner";
+import { StatusBadge } from "./monitor/StatusBadge";
+import { TimelineView } from "./monitor/TimelineView";
+import { EmployerResponseButtons } from "./monitor/EmployerResponseButtons";
 
 interface Submission {
   id: string;
@@ -33,6 +37,7 @@ interface Milestone {
   status: string;
   definitionOfDone: string;
   submissions: Submission[];
+  monitorActions: any[]; 
 }
 
 interface Project {
@@ -46,11 +51,15 @@ interface Project {
   milestones: Milestone[];
   employer: { name: string; email: string };
   freelancer?: { name: string; email: string };
+  monitor?: any;
 }
 
 interface User {
   id: string;
-  role: string;
+  name: string | null;
+  email: string;
+  role: string | null;
+  pfiScore: number;
 }
 
 export default function ProjectTerminal({ project, user }: { project: Project, user: User }) {
@@ -165,6 +174,8 @@ export default function ProjectTerminal({ project, user }: { project: Project, u
                   <CheckCircle2 className="w-4 h-4 text-green-500" />
                 ) : m.status === "REJECTED" ? (
                   <XCircle className="w-4 h-4 text-red-500" />
+                ) : m.status === "SUBMITTED" ? (
+                  <ShieldAlert className="w-4 h-4 text-cyan-500 animate-pulse" />
                 ) : (
                   <Clock className="w-4 h-4 text-primary animate-pulse" />
                 ) }
@@ -192,7 +203,11 @@ export default function ProjectTerminal({ project, user }: { project: Project, u
                     <div className="flex items-center gap-6">
                       <p className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-2">
                         <Activity className="w-3 h-3" />
-                        Status: <span className={activeMilestone.status === "APPROVED" ? "text-green-500" : "text-primary"}>{activeMilestone.status}</span>
+                        Status: <span className={
+                          activeMilestone.status === "APPROVED" ? "text-green-500" : 
+                          activeMilestone.status === "SUBMITTED" ? "text-cyan-400" : 
+                          "text-primary"
+                        }>{activeMilestone.status}</span>
                       </p>
                       <p className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-2">
                         <Shield className="w-3 h-3" />
@@ -214,12 +229,24 @@ export default function ProjectTerminal({ project, user }: { project: Project, u
                     <h3 className="text-[10px] font-black uppercase tracking-widest text-primary/40">Latest Submission Log</h3>
                     {activeMilestone.submissions.length > 0 ? (
                       <div className="p-4 bg-card border border-primary/20 space-y-4">
-                        <div className="flex items-center gap-2 text-[10px] font-black text-primary">
-                          <CheckCircle2 className="w-3 h-3" /> AQA RESULT: {activeMilestone.submissions[0].aqaResult}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-[10px] font-black text-primary">
+                            <CheckCircle2 className="w-3 h-3" /> AQA RESULT: {activeMilestone.submissions[0].aqaResult}
+                          </div>
+                          {activeMilestone.monitorActions?.length > 0 && activeMilestone.status === "SUBMITTED" && (
+                            <span className="text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/20 font-bold uppercase">
+                              Monitor Active
+                            </span>
+                          )}
                         </div>
                         <p className="text-[10px] text-muted-foreground font-sans leading-loose italic">
                           "{activeMilestone.submissions[0].aqaFeedback}"
                         </p>
+                        
+                        {activeMilestone.monitorActions?.[0]?.autoReleaseAt && activeMilestone.status === "SUBMITTED" && (
+                           <TimelineView autoReleaseAt={new Date(activeMilestone.monitorActions[0].autoReleaseAt)} />
+                        )}
+
                         <div className="text-[8px] text-muted-foreground/30 uppercase tracking-widest pt-2 border-t border-border/10">
                           LOGGED AT: {new Date(activeMilestone.submissions[0].createdAt).toLocaleString()}
                         </div>
@@ -265,14 +292,18 @@ export default function ProjectTerminal({ project, user }: { project: Project, u
                   </div>
                 )}
 
-                {isEmployer && activeMilestone.submissions.length > 0 && activeMilestone.status !== "APPROVED" && (
-                  <div className="mt-8 p-4 bg-primary/5 border border-primary/20 rounded">
-                    <p className="text-[9px] text-primary uppercase font-bold flex items-center gap-2 mb-2">
-                      <Lock className="w-3 h-3" /> PROMPT OVERRIDE AVAILABLE
+                {isEmployer && activeMilestone.submissions.length > 0 && activeMilestone.status === "SUBMITTED" && activeMilestone.monitorActions?.length > 0 && (
+                  <div className="mt-8 p-6 bg-cyan-500/5 border border-cyan-500/20 rounded-sm">
+                    <div className="flex items-center gap-2 text-cyan-400 mb-4 font-black text-xs uppercase tracking-widest">
+                      <Shield className="w-4 h-4" /> AI MONITOR COMMAND CENTER
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-6 leading-relaxed opacity-80 uppercase font-mono">
+                      PROTOCOL ANALYSIS: Automated Quality Assurance verified. Awaiting employer consensus or auto-release resolution.
                     </p>
-                    <p className="text-[10px] text-muted-foreground italic mb-4">
-                      The AQA Engine has assessed this submission. Use the Command Center if you wish to override the protocol decisions.
-                    </p>
+                    <EmployerResponseButtons 
+                      actionId={activeMilestone.monitorActions[0].id} 
+                      onSuccess={() => window.location.reload()} 
+                    />
                   </div>
                 )}
               </div>

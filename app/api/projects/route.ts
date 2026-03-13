@@ -65,27 +65,21 @@ export async function POST(req: Request) {
   }
 
   try {
-    const project = await db.project.create({
-      data: {
-        title,
-        description,
-        totalEscrow,
-        employerId: user.id,
-        milestones: {
-          create: milestones.map((m: any) => ({
-            title: m.title,
-            description: m.dod ?? m.title ?? "",
-            amount: m.amount,
-            definitionOfDone: m.dod,
-          })),
-        },
-      },
-      include: {
-        milestones: true,
-      },
+    // Atomic Create + Fund + Monitor
+    const { publishProject } = await import("@/lib/monitor/actions");
+    const result = await publishProject({
+      title,
+      description,
+      totalEscrow,
+      employerId: user.id,
+      milestones: milestones.map((m: any) => ({
+        title: m.title,
+        amount: m.amount,
+        dod: m.dod,
+      })),
     });
 
-    return NextResponse.json(project);
+    return NextResponse.json(result.project);
   } catch (error) {
     console.error("[PROJECTS_CREATE_ERROR]", error);
     return new NextResponse("Internal Server Error", { status: 500 });

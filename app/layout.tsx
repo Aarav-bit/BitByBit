@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 import "./globals.css";
 
 const inter = Inter({
@@ -30,6 +31,7 @@ export default function RootLayout({
         <body className="antialiased font-sans selection:bg-primary/30">
           {children}
           <Toaster position="bottom-right" theme="dark" closeButton richColors />
+          <ChatWidget />
         </body>
       </html>
     </ClerkProvider>

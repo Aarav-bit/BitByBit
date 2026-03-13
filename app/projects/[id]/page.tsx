@@ -15,12 +15,16 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
       where: { id },
       include: {
         milestones: {
-          include: { submissions: true },
+          include: { 
+            submissions: { orderBy: { createdAt: "desc" } },
+            monitorActions: { orderBy: { createdAt: "desc" } }
+          },
           orderBy: { createdAt: "asc" },
         },
         employer: true,
         freelancer: true,
-      }
+        monitor: true,
+      } as any
     })
   ]);
 

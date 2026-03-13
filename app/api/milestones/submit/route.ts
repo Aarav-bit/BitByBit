@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   const isPass = aqaResponse.result === "PASS";
 
   const result = await db.$transaction(async (tx: Prisma.TransactionClient) => {
-    // 0. Count previous submissions to determine if this is the first attempt
+    // 0. Count previous submissions
     const previousSubmissionsCount = await tx.submission.count({
       where: { milestoneId: milestone.id }
     });
@@ -54,35 +54,52 @@ export async function POST(req: Request) {
     });
 
     // 2. Update milestone status
+    // If AQA passes, it goes to SUBMITTED (awaiting employer/monitor)
+    // If AQA fails, it stays REJECTED/Needs work
     await tx.milestone.update({
       where: { id: milestone.id },
       data: {
-        status: isPass ? "APPROVED" : "REJECTED",
+        status: isPass ? "SUBMITTED" : "REJECTED",
       },
     });
 
     if (isPass) {
-      // 3. VIRTUAL PAYOUT
-      await tx.user.update({
-        where: { id: milestone.project.employerId },
-        data: { virtualBalance: { decrement: milestone.amount } },
-      });
+      // 3. AI MONITOR INTEGRATION
+      // We don't release funds here. We trigger the monitor review window.
+      const { onMilestoneSubmitted } = await import("@/lib/monitor/actions");
+      await onMilestoneSubmitted(milestone.id);
 
-      // PFI Rule: +5 on first attempt, +2 otherwise
+      // PFI Rule: +5 on first attempt, +2 otherwise (Awarded on submission pass)
       const pfiBoost = previousSubmissionsCount === 0 ? 5 : 2;
+      
+      // NEW METRICS
+      const isOnTime = !milestone.dueDate || new Date() <= milestone.dueDate;
 
       await tx.user.update({
         where: { id: user.id },
         data: { 
-          virtualBalance: { increment: milestone.amount },
-          pfiScore: { increment: pfiBoost }
+          pfiScore: { increment: pfiBoost },
+          totalSubmissionsCount: { increment: 1 },
+          submissionsFirstPassCount: { increment: previousSubmissionsCount === 0 ? 1 : 0 },
+          milestonesOnTimeCount: { increment: isOnTime ? 1 : 0 },
         },
       });
+
+      // Update Employer Scope Clarity metric
+      if (previousSubmissionsCount === 0) {
+        await tx.user.update({
+          where: { id: milestone.project.employerId },
+          data: { aqaFirstPassCount: { increment: 1 } }
+        });
+      }
     } else {
       // PFI Rule: -5 on rejection
       await tx.user.update({
         where: { id: user.id },
-        data: { pfiScore: { decrement: 5 } },
+        data: { 
+          pfiScore: { decrement: 5 },
+          totalSubmissionsCount: { increment: 1 },
+        },
       });
     }
 

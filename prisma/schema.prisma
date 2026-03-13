@@ -19,6 +19,39 @@ enum MilestoneStatus {
   REJECTED
 }
 
+enum MonitorStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  DISPUTED
+}
+
+enum ActionType {
+  NOTIFY_EMPLOYER
+  RELEASE_PAYMENT
+  REFUND_EMPLOYER
+  ESCALATE_TO_HUMAN
+  REQUEST_CLARIFICATION
+}
+
+enum ActionStatus {
+  PENDING
+  EMPLOYER_NOTIFIED
+  AWAITING_RESPONSE
+  AUTO_RELEASED
+  MANUALLY_REVIEWED
+  ESCALATED
+  CANCELLED
+}
+
+enum EscrowStatus {
+  HELD
+  PARTIAL
+  RELEASED
+  REFUNDED
+  DISPUTED
+}
+
 model User {
   id               String    @id @default(cuid())
   clerkId          String    @unique
@@ -33,40 +66,135 @@ model User {
   // Relationships
   projectsCreated  Project[] @relation("EmployerProjects")
   projectsAssigned Project[] @relation("FreelancerProjects")
+
+  // Employer Metrics (Calculated)
+  empPaymentReliability Float @default(100)
+  empResponseTime      Float @default(100)
+  empDisputeRate      Float @default(100)
+  empScopeClarity     Float @default(100)
+  empProjectCompletion Float @default(100)
+  empFairnessIndex    Float @default(100)
+  empCommunication    Float @default(100)
+  
+  // Raw Employer Data
+  milestonesPaidWithin48h Int @default(0)
+  totalMilestonesApproved Int @default(0)
+  totalReviewHours        Float @default(0)
+  totalMilestonesDisputedByEmp Int @default(0)
+  totalMilestonesCreated    Int @default(0)
+  aqaFirstPassCount         Int @default(0)
+  projectsCreatedCount      Int @default(0)
+  projectsCompletedCount    Int @default(0)
+  rejectionsUpheldCount     Int @default(0)
+  totalRejectionsCount      Int @default(0)
+
+  // Freelancer Metrics (Calculated)
+  freeQualityScore     Float @default(100)
+  freeOnTimeDelivery   Float @default(100)
+  freeProjectSuccess   Float @default(100)
+  freeRehireRate      Float @default(100)
+  freeCommunication    Float @default(100)
+  freeDisputeHistory   Float @default(100)
+  freeExperience       Float @default(0)
+
+  // Raw Freelancer Data
+  submissionsFirstPassCount Int @default(0)
+  totalSubmissionsCount     Int @default(0)
+  milestonesOnTimeCount     Int @default(0)
+  totalMilestonesAssignedCount Int @default(0)
+  projectsFinishedCount     Int @default(0)
+  projectsAcceptedCount     Int @default(0)
+  disputesLostCount         Int @default(0)
+  milestonesCompletedCount  Int @default(0)
+  rehireCount               Int @default(0)
+
+  // Common Communication Data
+  messagesRepliedWithinDeadline Int @default(0)
+  totalMessagesExpectedReply    Int @default(0)
+  
+  // Overall Scores
+  employerScore   Float @default(100)
+  freelancerScore Float @default(100)
+
+  messagesSent     Message[] @relation("SentMessages")
+  messagesReceived Message[] @relation("ReceivedMessages")
+
+  chatSessions     ChatSession[]
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  context   Json?    // Stores role, pfi, active projects snapshot
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  messages  ChatMessage[]
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String      // 'user' | 'assistant'
+  content   String
+  agentName String?     // Which specialist handled this (for debugging/UI)
+  actions   Json?       // Suggested actions/buttons
+  createdAt DateTime    @default(now())
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  senderId    String
+  receiverId  String
+  content     String
+  replyToId   String?  @unique
+  createdAt   DateTime @default(now())
+  repliedAt   DateTime?
+  
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  replyTo     Message? @relation("MessageReplies", fields: [replyToId], references: [id])
+  reply       Message? @relation("MessageReplies")
 }
 
 model Project {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  status      String   @default("ACTIVE")
-  totalEscrow Float
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String        @id @default(cuid())
+  title          String
+  description    String
+  status         String        @default("ACTIVE")
+  totalEscrow    Float
+  escrowBalance  Float         @default(0)
+  escrowStatus   EscrowStatus  @default(HELD)
+  autoReleaseDays Int          @default(5)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  employerId  String
-  employer    User     @relation("EmployerProjects", fields: [employerId], references: [id])
+  employerId     String
+  employer       User          @relation("EmployerProjects", fields: [employerId], references: [id])
   
-  freelancerId String?
-  freelancer   User?    @relation("FreelancerProjects", fields: [freelancerId], references: [id])
+  freelancerId   String?
+  freelancer     User?         @relation("FreelancerProjects", fields: [freelancerId], references: [id])
 
-  milestones  Milestone[]
+  milestones     Milestone[]
+  monitor        ProjectMonitor?
 }
 
 model Milestone {
-  id               String          @id @default(cuid())
+  id               String           @id @default(cuid())
   projectId        String
-  project          Project         @relation(fields: [projectId], references: [id])
+  project          Project          @relation(fields: [projectId], references: [id])
   title            String
   description      String
   amount           Float
   dueDate          DateTime?
-  status           MilestoneStatus @default(PENDING)
+  status           MilestoneStatus  @default(PENDING)
   definitionOfDone String
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   submissions      Submission[]
+  monitorActions   MonitorAction[]
 }
 
 model Submission {
@@ -77,4 +205,40 @@ model Submission {
   aqaResult   String?   // PASS, FAIL, PARTIAL
   aqaFeedback String?
   createdAt   DateTime  @default(now())
+}
+
+model ProjectMonitor {
+  id                 String         @id @default(cuid())
+  projectId          String         @unique
+  project            Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status             MonitorStatus  @default(ACTIVE)
+  totalHeld          Float          @default(0)
+  totalReleased      Float          @default(0)
+  totalRefunded      Float          @default(0)
+  lastAction         DateTime?
+  nextScheduledCheck DateTime?
+  decisions          Json[]
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  actions            MonitorAction[]
+}
+
+model MonitorAction {
+  id                 String         @id @default(cuid())
+  monitorId          String
+  monitor            ProjectMonitor @relation(fields: [monitorId], references: [id])
+  milestoneId        String?
+  milestone          Milestone?     @relation(fields: [milestoneId], references: [id])
+  actionType         ActionType
+  status             ActionStatus   @default(PENDING)
+  amount             Float?
+  submittedAt        DateTime
+  employerNotifiedAt DateTime?
+  responseDeadline   DateTime?
+  autoReleaseAt      DateTime?
+  executedAt         DateTime?
+  metadata           Json?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
 }
