@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X, Loader2, Wand2, ArrowLeft } from "lucide-react";
+import { Plus, X, Loader2, Wand2, ArrowLeft, Terminal, Shield, Cpu, Activity, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface MilestoneDraft {
   title: string;
@@ -46,7 +47,7 @@ export default function CreateProjectModal({ onClose }: { onClose: () => void })
       setDescription(data.description || task);
       setMilestones(Array.isArray(data.milestones) ? data.milestones : []);
       setStep(2);
-      toast.success("MILESTONES GENERATED. CONFIRM OR EDIT THEN DEPLOY.");
+      toast.success("MILESTONES_GENERATED // LINK_ESTABLISHED");
     } catch (e) {
       console.error(e);
       toast.error("GENERATION FAILED: UNKNOWN ERROR");
@@ -93,7 +94,7 @@ export default function CreateProjectModal({ onClose }: { onClose: () => void })
         headers: { "Content-Type": "application/json" }
       });
       if (res.ok) {
-        toast.success("PROTOCOL DEPLOYED SUCCESSFULLY");
+        toast.success("PROTOCOL_DEPLOYED // NODE_LIVE");
         onClose();
         router.refresh();
       } else {
@@ -108,166 +109,233 @@ export default function CreateProjectModal({ onClose }: { onClose: () => void })
   };
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-card border border-border w-full max-w-2xl shadow-2xl relative overflow-hidden font-mono">
-        <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
+    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="bg-slate-900/90 border border-white/10 w-full max-w-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden font-mono rounded-3xl"
+      >
+        <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+          <Terminal className="w-32 h-32" />
+        </div>
         
-        <div className="p-6 border-b border-border flex justify-between items-center bg-muted/30">
-          <h2 className="text-xl font-bold uppercase tracking-tighter">Initialize New Protocol Node</h2>
-          <button onClick={onClose} className="hover:text-primary transition-colors">
-            <X className="w-5 h-5" />
+        {/* Top Scanner Line */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent scanner-line z-20" />
+        
+        <div className="p-8 border-b border-white/10 flex justify-between items-center bg-slate-900/50 relative z-10">
+          <div className="flex items-center gap-4">
+            <div className="p-2.5 bg-primary/10 rounded-xl border border-primary/20">
+              <Cpu className="w-5 h-5 text-primary text-glow-primary" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black uppercase tracking-tighter italic">Initialize_Protocol</h2>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-[8px] text-slate-500 font-black uppercase tracking-[0.2em]">Secure_Handshake_Active</span>
+              </div>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors group">
+            <X className="w-5 h-5 text-slate-500 group-hover:text-primary transition-colors" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Protocol Title</label>
-            <input 
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. HIGH-FIDELITY CONTENT ENGINE"
-              className="w-full bg-background border border-border px-4 py-3 rounded-none focus:border-primary outline-none transition-all placeholder:opacity-30 uppercase"
-            />
+        <form onSubmit={handleSubmit} className="p-8 space-y-8 max-h-[75vh] overflow-y-auto custom-scrollbar relative z-10">
+          <div className="space-y-3">
+            <div className="flex justify-between items-end">
+              <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 italic">Node_Identity</label>
+              <span className="text-[8px] text-primary/40 font-black uppercase">REQUIRED_FIELD</span>
+            </div>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                <Terminal className="w-4 h-4 text-slate-600 group-focus-within:text-primary transition-colors" />
+              </div>
+              <input 
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="PROT_ID: GLOBAL_LINK_V1"
+                className="w-full bg-slate-950/50 border border-white/5 pl-12 pr-4 py-4 rounded-2xl focus:border-primary/50 outline-none transition-all placeholder:text-slate-700 uppercase font-black text-sm tracking-tight italic"
+              />
+            </div>
           </div>
 
           {step === 1 ? (
-            <>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                  Task (AI will convert to milestones)
-                </label>
-                <textarea
-                  required
-                  value={task}
-                  onChange={(e) => setTask(e.target.value)}
-                  placeholder="DESCRIBE THE TASK ONLY. EX: BUILD A LANDING PAGE + AUTH + DASHBOARD..."
-                  rows={5}
-                  className="w-full bg-background border border-border px-4 py-3 rounded-none focus:border-primary outline-none transition-all placeholder:opacity-30 uppercase font-sans text-sm"
-                />
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-8"
+            >
+              <div className="space-y-3">
+                <div className="flex justify-between items-end">
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 italic">
+                    Vector_Task_Input
+                  </label>
+                  <span className="text-[8px] text-slate-600 font-bold uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded">AI_DECRYPTION_ENABLED</span>
+                </div>
+                <div className="relative group">
+                  <textarea
+                    required
+                    value={task}
+                    onChange={(e) => setTask(e.target.value)}
+                    placeholder="DEFINE OBJECTIVE... (E.G. DEVELOP CROSS-PLATFORM SDK WITH RUST CORE)"
+                    rows={5}
+                    className="w-full bg-slate-950/50 border border-white/5 p-6 rounded-3xl focus:border-primary/50 outline-none transition-all placeholder:text-slate-700 uppercase font-black text-sm tracking-tight italic resize-none"
+                  />
+                  <div className="absolute bottom-4 right-4 text-[8px] text-slate-700 font-black uppercase tracking-widest">Natural_Lang_Parser</div>
+                </div>
               </div>
 
-              <div className="pt-2 flex gap-4">
+              <div className="pt-4 flex flex-col sm:flex-row gap-4">
                 <button
                   type="button"
                   onClick={handleGenerate}
                   disabled={generating || !title.trim() || !task.trim()}
-                  className="flex-grow bg-primary text-primary-foreground py-4 font-bold uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+                  className="flex-grow group relative overflow-hidden bg-primary text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] shadow-lg border border-white/10 disabled:opacity-30 transition-all text-xs"
                 >
-                  {generating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Wand2 className="w-5 h-5" />}
-                  {generating ? "Generating..." : "Generate Milestones"}
+                  <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
+                  <div className="flex justify-center items-center gap-3">
+                    {generating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Wand2 className="w-5 h-5 group-hover:rotate-12 transition-transform" />}
+                    <span>{generating ? "DECRYPTING..." : "Analyze_And_Generate"}</span>
+                  </div>
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-8 border border-border hover:bg-muted font-bold uppercase tracking-widest transition-all"
+                  className="px-10 py-5 bg-slate-950/50 border border-white/10 hover:border-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all"
                 >
-                  Abort
+                  Terminate
                 </button>
               </div>
-            </>
+            </motion.div>
           ) : (
-            <>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Scope Definition</label>
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-8"
+            >
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 italic">Scope_Matrix</label>
                 <textarea 
                   required
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="AI GENERATED SCOPE. YOU CAN EDIT BEFORE DEPLOY."
+                  placeholder="AI_GENERATED_SUMMARY"
                   rows={3}
-                  className="w-full bg-background border border-border px-4 py-3 rounded-none focus:border-primary outline-none transition-all placeholder:opacity-30 uppercase font-sans text-sm"
+                  className="w-full bg-slate-950/50 border border-white/5 p-6 rounded-3xl focus:border-primary/50 outline-none transition-all placeholder:text-slate-700 uppercase font-black text-xs tracking-tight italic resize-none"
                 />
               </div>
 
-              <div className="space-y-4">
-                <div className="flex justify-between items-center border-b border-border pb-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-primary">Milestone Segments</label>
+              <div className="space-y-6">
+                <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-3">
+                    <Activity className="w-4 h-4 text-primary" />
+                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">Milestone_Sequences</label>
+                  </div>
                   <button 
                     type="button"
                     onClick={addMilestone}
-                    className="text-[10px] font-bold uppercase flex items-center gap-1 hover:text-primary transition-colors"
+                    className="group flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-lg transition-all"
                   >
-                    <Plus className="w-3 h-3" /> [ Inject Segment ]
+                    <div className="w-5 h-5 bg-primary/10 rounded-md border border-primary/20 flex items-center justify-center">
+                      <Plus className="w-3 h-3 text-primary" />
+                    </div>
+                    <span className="text-[9px] font-black uppercase text-slate-500 group-hover:text-primary transition-colors">Inject_Sequence</span>
                   </button>
                 </div>
 
                 <div className="space-y-6">
-                  {milestones.map((m, index) => (
-                    <div key={index} className="p-4 border border-border bg-muted/10 relative group">
-                      <button 
-                        type="button"
-                        onClick={() => removeMilestone(index)}
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-red-500"
+                  <AnimatePresence>
+                    {milestones.map((m, index) => (
+                      <motion.div 
+                        key={index}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="p-6 border border-white/5 bg-slate-950/30 rounded-3xl relative group hover:border-white/10 transition-all"
                       >
-                        <X className="w-4 h-4" />
-                      </button>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="md:col-span-2 space-y-2">
-                          <input 
-                            required
-                            value={m.title}
-                            onChange={(e) => updateMilestone(index, "title", e.target.value)}
-                            placeholder="SEGMENT TITLE"
-                            className="w-full bg-transparent border-b border-border py-1 text-sm focus:border-primary outline-none transition-all uppercase font-bold"
-                          />
-                          <textarea 
-                            required
-                            value={m.dod}
-                            onChange={(e) => updateMilestone(index, "dod", e.target.value)}
-                            placeholder="DEFINITION OF DONE (AQA CRITERIA)"
-                            className="w-full bg-transparent border border-border/20 p-2 text-[10px] focus:border-primary outline-none transition-all font-sans"
-                            rows={2}
-                          />
-                        </div>
-                        <div className="flex flex-col justify-end">
-                          <label className="text-[9px] font-bold uppercase opacity-40 mb-1">Escrow Credit</label>
-                          <div className="relative">
-                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-primary font-bold text-xs">$</span>
-                            <input 
-                              type="number"
-                              required
-                              value={m.amount}
-                              onChange={(e) => updateMilestone(index, "amount", parseFloat(e.target.value) || 0)}
-                              className="w-full bg-background border border-border/40 pl-6 pr-2 py-2 text-sm focus:border-primary outline-none transition-all font-bold"
-                            />
+                        <button 
+                          type="button"
+                          onClick={() => removeMilestone(index)}
+                          className="absolute -top-2 -right-2 w-7 h-7 bg-slate-900 border border-white/10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-slate-800"
+                        >
+                          <X className="w-3 h-3 text-slate-500 hover:text-primary" />
+                        </button>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                          <div className="md:col-span-3 space-y-4">
+                            <div className="relative group/field">
+                              <input 
+                                required
+                                value={m.title}
+                                onChange={(e) => updateMilestone(index, "title", e.target.value)}
+                                placeholder="SEQ_TITLE: COMPONENT_BUILD"
+                                className="w-full bg-transparent border-b border-white/10 py-1.5 text-xs focus:border-primary/50 outline-none transition-all uppercase font-black tracking-tight italic group-hover/field:border-white/20"
+                              />
+                            </div>
+                            <div className="relative group/field">
+                              <textarea 
+                                required
+                                value={m.dod}
+                                onChange={(e) => updateMilestone(index, "dod", e.target.value)}
+                                placeholder="AQA_CRITERIA: UNIT_TESTS_PASS // LINT_GREEN"
+                                className="w-full bg-slate-900/50 border border-white/5 p-4 rounded-2xl text-[10px] focus:border-primary/50 outline-none transition-all font-sans italic resize-none group-hover/field:border-white/10"
+                                rows={2}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex flex-col justify-end">
+                            <label className="text-[8px] font-black uppercase text-slate-600 tracking-widest mb-2">Credit_Val_USD</label>
+                            <div className="relative group/field">
+                              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-black text-xs">$</div>
+                              <input 
+                                type="number"
+                                required
+                                value={m.amount}
+                                onChange={(e) => updateMilestone(index, "amount", parseFloat(e.target.value) || 0)}
+                                className="w-full bg-slate-900 border border-white/5 pl-8 pr-4 py-3 rounded-2xl text-[11px] focus:border-primary/50 outline-none transition-all font-black italic group-hover/field:border-white/10"
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </div>
               </div>
 
-              <div className="pt-4 flex gap-4">
+              <div className="pt-6 flex flex-col sm:flex-row gap-4">
                 <button
                   type="button"
                   onClick={() => setStep(1)}
                   disabled={loading}
-                  className="px-5 border border-border hover:bg-muted font-bold uppercase tracking-widest transition-all flex items-center gap-2 disabled:opacity-50"
+                  className="px-8 py-5 bg-slate-950/50 border border-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] disabled:opacity-30"
                 >
                   <ArrowLeft className="w-4 h-4" /> Back
                 </button>
                 <button 
                   type="submit"
                   disabled={loading || milestones.length === 0}
-                  className="flex-grow bg-primary text-primary-foreground py-4 font-bold uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+                  className="flex-grow group relative overflow-hidden bg-accent text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(34,197,94,0.2)] border border-white/10 disabled:opacity-30 transition-all text-xs"
                 >
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Deploy Protocol Instance"}
+                  <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
+                  <div className="flex justify-center items-center gap-3 relative z-10">
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 group-hover:scale-125 transition-transform" />}
+                    <span>{loading ? "CONFIGURING..." : "Finalize_And_Broadcast"}</span>
+                  </div>
                 </button>
                 <button 
                   type="button"
                   onClick={onClose}
-                  className="px-8 border border-border hover:bg-muted font-bold uppercase tracking-widest transition-all"
+                  className="px-8 py-5 bg-slate-950/50 border border-white/10 hover:border-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all"
                 >
                   Abort
                 </button>
               </div>
-            </>
+            </motion.div>
           )}
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 }

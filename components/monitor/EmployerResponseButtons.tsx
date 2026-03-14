@@ -33,40 +33,48 @@ export const EmployerResponseButtons: React.FC<EmployerResponseButtonsProps> = (
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-3">
+    <div className="space-y-6 relative z-10">
+      <div className="flex gap-4">
         <button
           onClick={() => handleRespond('APPROVE')}
           disabled={loading}
-          className="flex-1 bg-cyan-500 hover:bg-cyan-600 disabled:opacity-50 text-black font-bold py-2 px-4 rounded transition-colors"
+          className="group flex-1 relative overflow-hidden bg-accent text-white font-black py-4 px-6 rounded-2xl transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-[0_10px_30px_rgba(235,115,31,0.2)]"
         >
-          {loading ? 'Processing...' : 'Approve & Release'}
+          <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
+          <span className="relative z-10 uppercase tracking-[0.2em] text-xs">
+            {loading ? 'Executing_Release...' : 'Authorize_Payout'}
+          </span>
         </button>
         <button
           onClick={() => setShowRejectInput(!showRejectInput)}
           disabled={loading}
-          className="flex-1 border border-red-500/50 hover:bg-red-500/10 text-red-500 font-bold py-2 px-4 rounded transition-colors"
+          className="group flex-1 relative overflow-hidden border border-red-500/30 hover:border-red-500 bg-red-500/5 text-red-500 font-black py-4 px-6 rounded-2xl transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
         >
-          Reject / Dispute
+          <span className="relative z-10 uppercase tracking-[0.2em] text-xs">
+            Abort_Sequence
+          </span>
         </button>
       </div>
 
       {showRejectInput && (
-        <div className="space-y-2 p-3 bg-red-500/5 border border-red-500/20 rounded">
-          <label className="text-xs text-gray-400">Reason for rejection (Escalates to Human Review)</label>
+        <div className="space-y-4 p-8 bg-slate-950/80 border border-red-500/20 rounded-[32px] animate-in slide-in-from-top-4 duration-500 shadow-2xl">
+          <div className="flex items-center gap-3 text-red-500/60 mb-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            <label className="text-[10px] font-black uppercase tracking-widest italic">Input_Interruption_Reason</label>
+          </div>
           <textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            className="w-full bg-black border border-gray-800 rounded p-2 text-sm text-white focus:border-red-500 outline-none"
-            placeholder="Describe why this milestone doesn't meet the Definition of Done..."
+            className="w-full bg-slate-900/50 border border-white/5 rounded-2xl p-6 text-xs text-white focus:border-red-500/50 outline-none placeholder:text-slate-800 transition-all min-h-[120px] shadow-inner italic font-mono"
+            placeholder="PROTOCOL_VIOLATION_SPEC_REQUIRED..."
             rows={3}
           />
           <button
             onClick={() => handleRespond('REJECT')}
             disabled={loading || !reason.trim()}
-            className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold py-2 px-4 rounded transition-colors"
+            className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-black py-4 px-6 rounded-xl transition-all shadow-[0_10px_20px_rgba(220,38,38,0.2)] uppercase tracking-[0.2em] text-xs"
           >
-            Confirm Rejection
+            Confirm_Dispute_Sequence
           </button>
         </div>
       )}

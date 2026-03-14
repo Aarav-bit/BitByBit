@@ -20,9 +20,9 @@ export default function Home() {
           </div>
           
           <h1 className="text-7xl md:text-[10rem] font-black mb-8 uppercase tracking-tighter leading-none glow-text animate-in fade-in zoom-in-95 duration-1000 delay-200">
-            DECENTRALIZED <br />
+            AGENTIC <br />
             <span className="text-primary italic relative">
-              QUALITY
+              ESCROW
               <span className="absolute -bottom-2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
             </span>
           </h1>
