@@ -1,8 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Prisma } from "@prisma/client";
+import { evaluateSubmission } from "@/lib/ai/evaluator";
 
 export async function POST(req: Request) {
   const { userId: clerkId } = await auth();
@@ -33,9 +34,9 @@ export async function POST(req: Request) {
   }
 
   // --- AQA LOGIC (AI ASSESSOR) ---
-  const aqaResponse = await evaluateWithAI(content, milestone.definitionOfDone);
+  const aqaResponse = await evaluateSubmission(content, milestone.definitionOfDone, milestone.project.description);
   
-  const isPass = aqaResponse.result === "PASS";
+  const isPass = aqaResponse.overall >= 70; // Pass threshold
 
   const result = await db.$transaction(async (tx: Prisma.TransactionClient) => {
     // 0. Count previous submissions
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
       data: {
         milestoneId: milestone.id,
         content,
-        aqaResult: aqaResponse.result,
+        aqaScores: aqaResponse as any,
         aqaFeedback: aqaResponse.feedback,
       },
     });
@@ -103,59 +104,8 @@ export async function POST(req: Request) {
       });
     }
 
-    return { submission, aqaResult: aqaResponse.result, aqaFeedback: aqaResponse.feedback };
+    return { submission, aqaScores: aqaResponse, feedback: aqaResponse.feedback };
   });
 
   return NextResponse.json(result);
-}
-
-async function evaluateWithAI(content: string, dod: string) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  
-  if (!apiKey) {
-    console.warn("GEMINI_API_KEY missing - using mocked AQA result");
-    const isMockPass = content.length > 50; 
-    return {
-      result: isMockPass ? "PASS" : "FAIL",
-      feedback: isMockPass 
-        ? "MOCK AQA: Protocol verified. Content density sufficient. Definition of Done requirements detected."
-        : "MOCK AQA: Verification failed. Content too sparse to meet Definition of Done criteria. Provide more detailed deliverables.",
-    };
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
-  
-  const prompt = `
-    TASK: AI Quality Assurance (AQA) for BITBYBIT Escrow Protocol.
-    
-    CRITIQUE CRITERIA (Definition of Done):
-    "${dod}"
-    
-    SUBMISSION CONTENT:
-    """
-    ${content}
-    """
-    
-    INSTRUCTIONS:
-    Evaluate the submission against the criteria. 
-    Be strict. If the criteria asks for 3 items and only 2 are present, it is a FAIL.
-    Return your response in EXACTLY this JSON format:
-    {
-      "result": "PASS" | "FAIL",
-      "feedback": "Detailed explanation of why it passed or failed, referencing specific criteria."
-    }
-  `;
-
-  try {
-    const result = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-    });
-    const text = result.text ?? "";
-    const jsonStr = text.match(/\{[\s\S]*\}/)?.[0] || text;
-    return JSON.parse(jsonStr);
-  } catch (error) {
-    console.error("AI Evaluation error:", error);
-    return { result: "FAIL", feedback: "AQA Protocol error: AI evaluation service unavailable." };
-  }
 }

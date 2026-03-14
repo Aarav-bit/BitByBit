@@ -28,7 +28,7 @@ export function renderMilestoneSubmittedEmail(
 
   return {
     to,
-    subject: `BITBYBIT // Milestone ready for review: ${ctx.milestoneTitle}`,
+    subject: `FluxCred // Milestone ready for review: ${ctx.milestoneTitle}`,
     html: `
       <h2>Milestone Completed – Review Required</h2>
       <p>Your freelancer has submitted work for the following milestone:</p>
@@ -39,7 +39,7 @@ export function renderMilestoneSubmittedEmail(
       </ul>
       <p>
         Please review this milestone by <strong>${deadlineText}</strong>.
-        If you do not respond by this time, the BITBYBIT AI Monitor will
+        If you do not respond by this time, the FluxCred AI Monitor will
         automatically release payment from escrow to the freelancer.
       </p>
       <p>
@@ -59,7 +59,7 @@ export function renderMilestoneAutoReleaseWarningEmail(
 
   return {
     to,
-    subject: `BITBYBIT // Auto-release warning: ${ctx.milestoneTitle}`,
+    subject: `FluxCred // Auto-release warning: ${ctx.milestoneTitle}`,
     html: `
       <h2>Auto-Release Countdown</h2>
       <p>
@@ -73,7 +73,7 @@ export function renderMilestoneAutoReleaseWarningEmail(
       </ul>
       <p>
         If you do not take action by <strong>${deadlineText}</strong>,
-        the BITBYBIT AI Monitor will release the funds to the freelancer.
+        the FluxCred AI Monitor will release the funds to the freelancer.
       </p>
     `,
   };
@@ -85,7 +85,7 @@ export function renderPaymentAutoReleasedEmail(
 ): EmailPayload {
   return {
     to,
-    subject: `BITBYBIT // Payment auto-released: ${ctx.milestoneTitle}`,
+    subject: `FluxCred // Payment auto-released: ${ctx.milestoneTitle}`,
     html: `
       <h2>Payment Auto-Released</h2>
       <p>
@@ -98,7 +98,7 @@ export function renderPaymentAutoReleasedEmail(
         <li><strong>Amount Released</strong>: $${ctx.amount.toFixed(2)}</li>
       </ul>
       <p>
-        All actions are logged in the BITBYBIT AI Monitor for transparency.
+        All actions are logged in the FluxCred AI Monitor for transparency.
       </p>
     `,
   };
@@ -110,7 +110,7 @@ export function renderPaymentManuallyReleasedEmail(
 ): EmailPayload {
   return {
     to,
-    subject: `BITBYBIT // Payment released: ${ctx.milestoneTitle}`,
+    subject: `FluxCred // Payment released: ${ctx.milestoneTitle}`,
     html: `
       <h2>Payment Released</h2>
       <p>
@@ -123,7 +123,7 @@ export function renderPaymentManuallyReleasedEmail(
         <li><strong>Amount Released</strong>: $${ctx.amount.toFixed(2)}</li>
       </ul>
       <p>
-        This decision is recorded in the BITBYBIT AI Monitor.
+        This decision is recorded in the FluxCred AI Monitor.
       </p>
     `,
   };
@@ -135,11 +135,11 @@ export function renderMilestoneRejectedEmail(
 ): EmailPayload {
   return {
     to,
-    subject: `BITBYBIT // Milestone rejected: ${ctx.milestoneTitle}`,
+    subject: `FluxCred // Milestone rejected: ${ctx.milestoneTitle}`,
     html: `
       <h2>Milestone Rejected</h2>
       <p>
-        The employer has rejected the following milestone. The BITBYBIT AI
+        The employer has rejected the following milestone. The FluxCred AI
         Monitor has flagged this for review.
       </p>
       <ul>

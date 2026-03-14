@@ -9,7 +9,7 @@ export async function GET() {
 
   // const user = await db.user.findUnique({ where: { clerkId } });
   // For MVP, we can assume certain users are admins or just allow all for testing
-  // if (user?.email !== "admin@bitbybit.com") return new NextResponse("Forbidden", { status: 403 });
+  // if (user?.email !== "admin@fluxcred.com") return new NextResponse("Forbidden", { status: 403 });
 
   const projects = await db.project.findMany({
     include: {

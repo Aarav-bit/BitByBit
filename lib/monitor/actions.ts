@@ -82,7 +82,7 @@ export async function publishProject(data: {
     });
 
     return { project, monitor };
-  });
+  }, { maxWait: 5000, timeout: 20000 });
 
   // 6. Update Scores (outside transaction)
   const { updateReputationScores } = await import("@/lib/scoring");
@@ -146,7 +146,7 @@ export async function holdProjectFunds(projectId: string, amount: number) {
     }
 
     return updatedProject;
-  });
+  }, { maxWait: 5000, timeout: 20000 });
 
   // 3. Update Scores (outside transaction)
   const { updateReputationScores } = await import("@/lib/scoring");
@@ -198,7 +198,7 @@ export async function onMilestoneSubmitted(milestoneId: string) {
     });
 
     return newAction;
-  });
+  }, { maxWait: 5000, timeout: 20000 });
 
   // 📧 Send email to employer
   const employer = milestone.project.employer;
@@ -337,7 +337,7 @@ export async function executeRelease(actionId: string, isAuto: boolean = false) 
     }
 
     return action;
-  });
+  }, { maxWait: 5000, timeout: 20000 });
 }
 
 /**
@@ -409,5 +409,5 @@ export async function handleRejection(actionId: string, reason: string) {
     }
 
     return action;
-  });
+  }, { maxWait: 5000, timeout: 20000 });
 }

@@ -29,7 +29,7 @@ export async function sendEmail(payload: EmailPayload): Promise<void> {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: "BITBYBIT Monitor <onboarding@resend.dev>",
+      from: "FluxCred Monitor <onboarding@resend.dev>",
       to,
       subject,
       html,

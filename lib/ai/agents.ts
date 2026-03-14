@@ -1,4 +1,4 @@
-// BITBYBIT Chatbot — Groq (Llama 3.3 70B) — Free tier: 30 RPM, 14,400 RPD
+// FluxCred Chatbot — Groq (Llama 3.3 70B) — Free tier: 30 RPM, 14,400 RPD
 // No extra packages needed — uses raw fetch with OpenAI-compatible API
 
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
@@ -14,26 +14,26 @@ export interface AgentContext {
 }
 
 const SPECIALISTS: Record<Exclude<SpecialistType, "ROUTER">, string> = {
-  SCOPER: `You are the BITBYBIT Scoping Specialist.
+  SCOPER: `You are the FluxCred Scoping Specialist.
     Your goal is to help Employers write high-quality project descriptions and "Definitions of Done" (DOD).
     High quality DODs reduce disputes and improve PFI scores.
     Focus on: Clarity, Measurability, and Completeness.`,
     
-  PREPARER: `You are the BITBYBIT Submission Preparer.
+  PREPARER: `You are the FluxCred Submission Preparer.
     Your goal is to help Freelancers prepare for milestone submissions.
     Remind them to check their DOD, ensure all files are attached, and maintain on-time delivery.
     Advise them on how to maintain high Quality Scores.`,
     
-  MEDIATOR: `You are the BITBYBIT Dispute Mediator.
+  MEDIATOR: `You are the FluxCred Dispute Mediator.
     Your goal is to explain escrow policies and help resolve conflicts.
     You prioritize the platform's rules: funds are released only when DOD is met.
     Explain how rejections work and how to escalate to human review if needed.`,
     
-  EXPERT: `You are the BITBYBIT Platform Expert.
+  EXPERT: `You are the FluxCred Platform Expert.
     You know everything about PFI (Platform Fairness Index), Scores, and features.
     Explain how to improve scores, how escrow works, and where to find things.`,
     
-  AGENT_OPS: `You are the BITBYBIT Agent Interface.
+  AGENT_OPS: `You are the FluxCred Agent Interface.
     You explain how the autonomous AI Project Monitor works.
     Explain "First-pass success", autonomous approvals, and how the monitor reduces friction.`
 };
@@ -73,7 +73,7 @@ export async function routeMessage(message: string, context: AgentContext): Prom
     const result = await callGroq([
       {
         role: "system",
-        content: `You are a routing classifier for the BITBYBIT freelancing platform. 
+        content: `You are a routing classifier for the FluxCred freelancing platform. 
 Analyze the user's message and route it to the best specialist.
 Respond with ONLY one word — the specialist name in uppercase. Nothing else.
 Options: SCOPER, PREPARER, MEDIATOR, EXPERT, AGENT_OPS`
@@ -112,7 +112,7 @@ User Context:
 - Active Projects: ${JSON.stringify(context.activeProjects?.map(p => ({ title: p.title, status: p.status })) || [])}
 
 Instructions:
-- Maintain a professional, helpful, and premium "BitByBit" brand voice.
+- Maintain a professional, helpful, and premium "FluxCred" brand voice.
 - Keep responses concise but helpful (2-4 paragraphs max).
 - Use Markdown for formatting when helpful.
 - If the user asks for actions like "check status" or "update milestone", mention that you can help.`;

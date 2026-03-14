@@ -202,7 +202,7 @@ model Submission {
   milestoneId String
   milestone   Milestone @relation(fields: [milestoneId], references: [id])
   content     String
-  aqaResult   String?   // PASS, FAIL, PARTIAL
+  aqaScores   Json?     // Detailed score breakdown
   aqaFeedback String?
   createdAt   DateTime  @default(now())
 }

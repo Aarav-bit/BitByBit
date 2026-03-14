@@ -17,8 +17,8 @@ interface Project {
 }
 
 interface User {
-  name: string;
-  role: string;
+  name: string | null;
+  role: string | null;
   pfiScore: number;
   virtualBalance: number;
 }
@@ -53,7 +53,7 @@ export default function DashboardContent({ user }: { user: User }) {
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
         <div>
           <h1 className="text-3xl font-bold uppercase tracking-tighter text-glow-primary">
-            TERMINAL // <span className="text-primary">{user.name || "UNIDENTIFIED USER"}</span>
+            TERMINAL // <span className="text-primary">{(user.name || "UNIDENTIFIED USER").replace(/\s+null$/i, "")}</span>
           </h1>
           <p className="text-muted-foreground text-xs flex flex-wrap items-center gap-4 mt-2">
             <span className="flex items-center gap-2">
@@ -103,7 +103,7 @@ export default function DashboardContent({ user }: { user: User }) {
           {loading ? (
             <div className="flex items-center gap-3 text-muted-foreground text-xs animate-pulse p-12 border border-border/20 rounded bg-card/10">
               <Activity className="w-4 h-4 animate-spin text-primary" />
-              SYNCHRONIZING WITH BITBYBIT DATA LAYER...
+              SYNCHRONIZING WITH FLUXCRED DATA LAYER...
             </div>
           ) : projects.length === 0 ? (
             <div className="py-24 text-center border border-dashed border-border/50 rounded bg-muted/5">

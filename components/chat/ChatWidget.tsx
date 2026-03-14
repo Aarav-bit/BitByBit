@@ -24,14 +24,14 @@ export function ChatWidget() {
 
   useEffect(() => {
     // Generate simple session ID or use persistent one
-    const existing = localStorage.getItem("bitbybit_chat_session");
+    const existing = localStorage.getItem("fluxcred_chat_session");
     if (existing) {
       setSessionId(existing);
       fetchHistory(existing);
     } else {
       const newId = Math.random().toString(36).substring(7);
       setSessionId(newId);
-      localStorage.setItem("bitbybit_chat_session", newId);
+      localStorage.setItem("fluxcred_chat_session", newId);
     }
   }, []);
 
@@ -115,7 +115,7 @@ export function ChatWidget() {
                   <Bot size={22} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg">BITBYBIT Assistant</h3>
+                  <h3 className="font-semibold text-lg">FluxCred Assistant</h3>
                   <p className="text-xs text-blue-100 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                     Online & Ready
@@ -140,7 +140,7 @@ export function ChatWidget() {
                   <div className="w-16 h-16 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-4 text-blue-600">
                     <Sparkles size={32} />
                   </div>
-                  <h4 className="text-zinc-900 dark:text-white font-medium mb-2">Welcome to BITBYBIT</h4>
+                  <h4 className="text-zinc-900 dark:text-white font-medium mb-2">Welcome to FluxCred</h4>
                   <p className="text-zinc-500 text-sm">
                     How can I help you today? I can help with scoping, submissions, and platform questions.
                   </p>

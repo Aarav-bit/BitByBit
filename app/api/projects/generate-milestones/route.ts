@@ -52,7 +52,7 @@ async function generateWithAI(task: string, title?: string) {
   const ai = new GoogleGenAI({ apiKey });
 
   const prompt = `
-You are generating milestone drafts for the BITBYBIT escrow protocol.
+You are generating milestone drafts for the FluxCred escrow protocol.
 
 INPUT:
 - Title (optional): ${title ? JSON.stringify(title) : "null"}

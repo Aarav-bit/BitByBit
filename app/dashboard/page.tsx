@@ -25,7 +25,7 @@ export default async function DashboardPage() {
       data: {
         clerkId: userId,
         email: clerkUser?.emailAddresses[0].emailAddress || "",
-        name: `${clerkUser?.firstName} ${clerkUser?.lastName}`,
+        name: [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" "),
       },
       include: {
         projectsCreated: true,

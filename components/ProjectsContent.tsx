@@ -138,7 +138,7 @@ export default function ProjectsContent({ user }: { user: any }) {
           {loading ? (
             <div className="flex items-center gap-3 text-muted-foreground text-xs animate-pulse p-12 border border-border/20 rounded bg-card/10">
               <Activity className="w-4 h-4 animate-spin text-primary" />
-              SYNCHRONIZING WITH BITBYBIT DATA LAYER...
+              SYNCHRONIZING WITH FLUXCRED DATA LAYER...
             </div>
           ) : filteredProjects.length === 0 ? (
             <div className="p-24 border border-dashed border-border/30 rounded text-center">

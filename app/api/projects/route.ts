@@ -80,8 +80,11 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(result.project);
-  } catch (error) {
+  } catch (error: any) {
     console.error("[PROJECTS_CREATE_ERROR]", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    if (error.message === "Insufficient virtual balance to publish project") {
+      return new NextResponse(error.message, { status: 400 });
+    }
+    return new NextResponse(error.message || "Internal Server Error", { status: 500 });
   }
 }
