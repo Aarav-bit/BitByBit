@@ -1,4 +1,4 @@
-# AGENTIC ESCROW (BITBYBIT)
+# FluxCred (by team Spartans)
 
 AGENTIC ESCROW is a high-performance, autonomous quality assurance and virtual escrow protocol. It automates trust in the gig economy by using AI agents to verify deliverables and trigger instant payouts the millisecond the "Definition of Done" is met.
 
